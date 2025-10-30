@@ -1,6 +1,78 @@
 #include <iostream>
+#include <string>
+#include <vector>
 
 using namespace std;
+
+
+
+struct Order {
+    enum class OrderBookType { bid, ask };
+    
+    double amount;
+    double price;
+    string timestamp;
+    string products;
+    string orderType;
+};
+
+// Function declerations
+int getUserOption(){}
+void printMenu(){}
+void processUserOption(int userOption, vector<Order> orderLedger) {}
+vector<string> readOrderData(){}
+vector<Order> processOrderData(vector<string> orderDataText){}
+
+int main() {
+    int userOption = 1;
+    vector<string> orderDataText = readOrderData();
+    vector<Order> orders = processOrderData(orderDataText);
+    while (userOption != 7) {
+        printMenu();
+        userOption = getUserOption();
+        processUserOption(userOption, orders); 
+    }
+
+    return 0;
+}
+
+// REGION: Function implementations
+vector<string> readOrderData() {
+    vector<string> orderData;
+
+    orderData.push_back("2020/03/17 17:01:24.884492,ETH/BTC,bid,0.02187308,7.44564869");
+    orderData.push_back("2020/03/17 17:01:24.884492,ETH/BTC,bid,0.02187307,3.467434");
+
+    return orderData;
+}
+
+vector<Order> processOrderData(vector<string> orderDataText) {
+    vector<Order> orders;
+    vector<string> tempOrderData;
+    Order tempOrder;
+    string::size_type n;
+    char del = ',';
+
+    for (int i = 0; i < orders.size(); i++) {
+        n = orderDataText[i].find(del);
+        
+        while(n != string::npos) {
+            tempOrderData.push_back(orderDataText[i].substr(0, n));
+            orderDataText[i].erase(0, n + 1);
+            n = orderDataText[i].find(del);
+        }
+
+            tempOrder.timestamp = tempOrderData[0];
+            tempOrder.products = tempOrderData[1];
+            tempOrder.orderType = tempOrderData[2];
+            tempOrder.price = stod(tempOrderData[3]);
+            tempOrder.amount = stod(tempOrderData[4]);
+
+            orders.push_back(tempOrder);
+        }
+
+    return orders;
+}
 
 int getUserOption() {
     int userSelection;
@@ -37,8 +109,16 @@ void printHelp() {
     cout << "Help - your aim is to use this exchange to purchase and sell various crypto currencies." << endl;
 }
 
-void printStats() {
+void printStats(vector<Order> ordersLedger) {
     cout << "Stats Placeholder" << endl << endl;
+
+    for(Order order: ordersLedger) {
+        cout << "\nTimestamp: " << order.timestamp << endl;
+        cout << "\nProducts: " << order.products << endl;
+        cout << "\nType: " << order.orderType << endl;
+        cout << "\nPrice: "<< order.price << endl;
+        cout << "\nAmount: " << order.amount << endl;
+    }
 }
 
 void makeOffer() {
@@ -58,7 +138,7 @@ void nextTimeStep() {
 }
 
 /** Processes the user's request by taking in an int that is between 1 and 7 */
-void processUserOption(int userOption) {
+void processUserOption(int userOption, vector<Order> ordersLedger) {
     enum menOpt {
         INVALID     = 0,
         HELP        = 1,
@@ -78,7 +158,7 @@ void processUserOption(int userOption) {
             printHelp();
             break;
         case menOpt::STATS:
-            printStats();
+            printStats(ordersLedger);
             break;
         case menOpt::OFFER:
             makeOffer();
@@ -96,15 +176,4 @@ void processUserOption(int userOption) {
             cout << "Exiting..." << endl << endl;
         }
 }
-
-int main() {
-    int userOption = 1;
-
-    while (userOption != 7) {
-        printMenu();
-        userOption = getUserOption();
-        processUserOption(userOption); 
-    }
-
-    return 0;
-}
+//END REGION
