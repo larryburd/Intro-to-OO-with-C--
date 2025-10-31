@@ -4,8 +4,6 @@
 
 using namespace std;
 
-
-
 struct Order {
     enum class OrderBookType { bid, ask };
     
@@ -14,14 +12,15 @@ struct Order {
     string timestamp;
     string products;
     string orderType;
+    bool error = false;
 };
 
-// Function declerations
-int getUserOption(){}
-void printMenu(){}
-void processUserOption(int userOption, vector<Order> orderLedger) {}
-vector<string> readOrderData(){}
-vector<Order> processOrderData(vector<string> orderDataText){}
+// Function prototypes
+int getUserOption();
+void printMenu();
+void processUserOption(int, vector<Order>);
+vector<string> readOrderData();
+vector<Order> processOrderData(vector<string>);
 
 int main() {
     int userOption = 1;
@@ -53,7 +52,7 @@ vector<Order> processOrderData(vector<string> orderDataText) {
     string::size_type n;
     char del = ',';
 
-    for (int i = 0; i < orders.size(); i++) {
+    for (int i = 0; i < orderDataText.size(); i++) {
         n = orderDataText[i].find(del);
         
         while(n != string::npos) {
@@ -62,14 +61,23 @@ vector<Order> processOrderData(vector<string> orderDataText) {
             n = orderDataText[i].find(del);
         }
 
+        if (orderDataText.size() == 1) {
+            // Get the text after the last deliminator
+            tempOrderData.push_back(orderDataText[1]);
+        }
+
+        if (tempOrderData.size() == 5) {
             tempOrder.timestamp = tempOrderData[0];
             tempOrder.products = tempOrderData[1];
             tempOrder.orderType = tempOrderData[2];
             tempOrder.price = stod(tempOrderData[3]);
             tempOrder.amount = stod(tempOrderData[4]);
-
-            orders.push_back(tempOrder);
+        } else {
+            tempOrder.error = true;
         }
+        
+        orders.push_back(tempOrder);
+    }
 
     return orders;
 }
@@ -110,15 +118,16 @@ void printHelp() {
 }
 
 void printStats(vector<Order> ordersLedger) {
-    cout << "Stats Placeholder" << endl << endl;
-
+    cout << "\nNumber of Orders: " << ordersLedger.size() << endl;
+    cout << "{" << endl;
     for(Order order: ordersLedger) {
-        cout << "\nTimestamp: " << order.timestamp << endl;
-        cout << "\nProducts: " << order.products << endl;
-        cout << "\nType: " << order.orderType << endl;
-        cout << "\nPrice: "<< order.price << endl;
-        cout << "\nAmount: " << order.amount << endl;
+        cout << "\n" << "   Timestamp: " << order.timestamp << endl;
+        cout << "   Products: " << order.products << endl;
+        cout << "   Type: " << order.orderType << endl;
+        cout << "   Price: "<< order.price << endl;
+        cout << "   Amount: " << order.amount << endl;
     }
+    cout << "}\n" << endl;
 }
 
 void makeOffer() {
