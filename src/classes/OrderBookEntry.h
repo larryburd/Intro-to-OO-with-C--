@@ -1,5 +1,5 @@
-#ifndef ORDER_BOOK_ENTRY
-#define ORDER_BOOK_ENTRY
+#pragma once
+
 
 #include <string>
 #include "OrderBookType.h"
@@ -25,5 +25,3 @@ class OrderBookEntry {
         void setProducts(std::string);
         void setOrderType(OrderBookType);
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef EXCHANGER_MAIN
-#define EXCHANGER_MAIN
+#pragma once
 
 #include "OrderBookType.h"
 #include "OrderBookEntry.h"
@@ -39,5 +38,3 @@ class ExchangerMain {
         void init();
 
 };
-
-#endif
