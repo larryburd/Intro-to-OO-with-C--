@@ -4,32 +4,39 @@
 
 using namespace std;
 
-struct Order {
-    enum class OrderBookType { bid, ask };
-    
-    double amount;
-    double price;
-    string timestamp;
-    string products;
-    string orderType;
-    bool error = false;
+class Order {
+    public:
+        double amount;
+        double price;
+        string timestamp;
+        string products;
+        string orderType;
+
+        Order(string, string, string, double, double);
 };
+
+// Order constructor
+Order::Order(string _timestamp, string _products,
+             string _orderType, double _amount, double _price) : price(_price), 
+             amount(_amount), timestamp(_timestamp), products(_products), 
+             orderType(_orderType) {}
 
 // Function prototypes
 int getUserOption();
 void printMenu();
-void processUserOption(int, vector<Order>);
+void processUserOption(int, vector<Order>*);
 vector<string> readOrderData();
-vector<Order> processOrderData(vector<string>);
+void processOrderData(vector<string>*, vector<Order>*);
 
 int main() {
     int userOption = 1;
     vector<string> orderDataText = readOrderData();
-    vector<Order> orders = processOrderData(orderDataText);
-    while (userOption != 7) {
+    vector<Order> orders;
+    processOrderData(&orderDataText, &orders);
+    while (userOption >= 1 && userOption <= 6) {
         printMenu();
         userOption = getUserOption();
-        processUserOption(userOption, orders); 
+        processUserOption(userOption, &orders); 
     }
 
     return 0;
@@ -45,41 +52,31 @@ vector<string> readOrderData() {
     return orderData;
 }
 
-vector<Order> processOrderData(vector<string> orderDataText) {
-    vector<Order> orders;
-    vector<string> tempOrderData;
-    Order tempOrder;
+void processOrderData(vector<string> *ptrOrderDataText, vector<Order> *ptrOrders) {
+    vector<string> tempOO; //temporary Order object
     string::size_type n;
-    char del = ',';
+    char del = ','; // Delimiter
 
-    for (int i = 0; i < orderDataText.size(); i++) {
-        n = orderDataText[i].find(del);
+    for (int i = 0; i < (*ptrOrderDataText).size(); i++) {
+        n = (*ptrOrderDataText)[i].find(del);
         
         while(n != string::npos) {
-            tempOrderData.push_back(orderDataText[i].substr(0, n));
-            orderDataText[i].erase(0, n + 1);
-            n = orderDataText[i].find(del);
+            tempOO.push_back((*ptrOrderDataText)[i].substr(0, n));
+            (*ptrOrderDataText)[i].erase(0, n + 1);
+            n = (*ptrOrderDataText)[i].find(del);
         }
 
-        if (orderDataText.size() == 1) {
+        if ((*ptrOrderDataText)[i].length() >= 1) {
             // Get the text after the last deliminator
-            tempOrderData.push_back(orderDataText[1]);
+            tempOO.push_back((*ptrOrderDataText)[i]);
         }
 
-        if (tempOrderData.size() == 5) {
-            tempOrder.timestamp = tempOrderData[0];
-            tempOrder.products = tempOrderData[1];
-            tempOrder.orderType = tempOrderData[2];
-            tempOrder.price = stod(tempOrderData[3]);
-            tempOrder.amount = stod(tempOrderData[4]);
-        } else {
-            tempOrder.error = true;
-        }
-        
-        orders.push_back(tempOrder);
+        if (tempOO.size() == 5) { // We have the right amount of info
+            (*ptrOrders).push_back(Order{tempOO[0], tempOO[1], tempOO[2], stod(tempOO[3]), stod(tempOO[4])});
+        } 
+
+        tempOO.clear(); // Reset for next run
     }
-
-    return orders;
 }
 
 int getUserOption() {
@@ -102,10 +99,10 @@ void printMenu() {
     // 6: Next time step
     cout << "6: Next Time Step" << endl;
     // 7: Exit
-    cout << "7: Exit Program" << endl;
+    cout << "Any Other Number: Exit Program" << endl;
 
-    cout << "=================" << endl;
-    cout << "Selection an option 1-7" << endl;
+    cout << "==============================" << endl;
+    cout << "Selection an option 1-6" << endl;
 
 }
 
@@ -117,10 +114,10 @@ void printHelp() {
     cout << "Help - your aim is to use this exchange to purchase and sell various crypto currencies." << endl;
 }
 
-void printStats(vector<Order> ordersLedger) {
-    cout << "\nNumber of Orders: " << ordersLedger.size() << endl;
+void printStats(vector<Order> *ordersLedger) {
+    cout << "\nNumber of Orders: " << (*ordersLedger).size() << endl;
     cout << "{" << endl;
-    for(Order order: ordersLedger) {
+    for(Order& order: *ordersLedger) {
         cout << "\n" << "   Timestamp: " << order.timestamp << endl;
         cout << "   Products: " << order.products << endl;
         cout << "   Type: " << order.orderType << endl;
@@ -147,7 +144,7 @@ void nextTimeStep() {
 }
 
 /** Processes the user's request by taking in an int that is between 1 and 7 */
-void processUserOption(int userOption, vector<Order> ordersLedger) {
+void processUserOption(int userOption, vector<Order> *ptrOrdersLedger) {
     enum menOpt {
         INVALID     = 0,
         HELP        = 1,
@@ -167,7 +164,7 @@ void processUserOption(int userOption, vector<Order> ordersLedger) {
             printHelp();
             break;
         case menOpt::STATS:
-            printStats(ordersLedger);
+            printStats(ptrOrdersLedger); // Passing by reference
             break;
         case menOpt::OFFER:
             makeOffer();
